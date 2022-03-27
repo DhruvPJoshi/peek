@@ -19,49 +19,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-package cmd
+package ops
 
 import (
   "fmt"
-	"github.com/DhruvPJoshi/peek/ops"
-	"github.com/spf13/cobra"
-	"os"
+  "os"
+  "strings"
 )
 
-var verbose bool
+func PeekIn(search string, file *string) {
+  data, err := os.ReadFile(*file)
+	check(err)
 
-var peekCmd = &cobra.Command{
-	Use:   "peek STRING FILE",
-	Short: "Displays lines of a file beginning with a given string.",
-	Long: `The peek utility will display the lines in a specified file that matches a given string as prefix.
-
-This utility is somewhat similar to the Unix's look utility.`,
-	Args: cobra.MinimumNArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
-		if verbose {
-		  fmt.Println("Verbose logging active.")
-		}
-
-		search := args[0]
-		if verbose {
-  		fmt.Printf("Search string: %s\n", search)
-		}
-		file := args[1]
-		if verbose {
-		  fmt.Printf("File to search: %s\n", file)
-		}
-
-		ops.PeekIn(search, &file)
-	},
-}
-
-func Execute() {
-	err := peekCmd.Execute()
-	if err != nil {
-		os.Exit(1)
+	for _, line := range strings.Split(string(data), "\n") {
+	  if startsWith(line, search) {
+	    fmt.Println(line);
+	  }
 	}
 }
 
-func init() {
-	peekCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose messaging")
+func startsWith(line string, search string) bool {
+  where := strings.Index(line, search)
+  return where != -1 && where == 0
+}
+
+func check(e error) {
+  if e != nil {
+    fmt.Printf("error: %s\n", e)
+  }
 }
